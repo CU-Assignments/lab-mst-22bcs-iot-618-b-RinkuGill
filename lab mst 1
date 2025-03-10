@@ -1,0 +1,106 @@
+import java.util.ArrayList;
+import java.util.Scanner;
+
+class Video {
+    private String title;
+    private boolean checkedOut = false;
+    private double averageRating = 0.0;
+    private int ratingCount = 0;
+
+    public Video(String title) {
+        this.title = title;
+    }
+
+    public String getTitle() { return title; }
+    
+    public void checkOut() {
+        if (!checkedOut) {
+            checkedOut = true;
+            System.out.println(title + " has been checked out.");
+        } else {
+            System.out.println(title + " is already checked out.");
+        }
+    }
+
+    public void returnVideo() {
+        if (checkedOut) {
+            checkedOut = false;
+            System.out.println(title + " has been returned.");
+        } else {
+            System.out.println(title + " was not checked out.");
+        }
+    }
+
+    public void receiveRating(int rating) {
+        if (rating < 1 || rating > 5) {
+            System.out.println("Invalid rating! Please enter a value between 1 and 5.");
+            return;
+        }
+        averageRating = ((averageRating * ratingCount) + rating) / (++ratingCount);
+        System.out.println("New rating for " + title + ": " + String.format("%.2f", averageRating));
+    }
+
+    @Override
+    public String toString() {
+        return "Title: " + title + " | Checked Out: " + checkedOut + " | Rating: " + String.format("%.2f", averageRating);
+    }
+}
+
+class VideoStore {
+    private ArrayList<Video> videos = new ArrayList<>();
+
+    public void addVideo(String title) {
+        videos.add(new Video(title));
+        System.out.println("Video \"" + title + "\" added to store.");
+    }
+
+    public Video findVideo(String title) {
+        return videos.stream().filter(v -> v.getTitle().equalsIgnoreCase(title)).findFirst().orElse(null);
+    }
+
+    public void listInventory() {
+        if (videos.isEmpty()) {
+            System.out.println("No videos in inventory.");
+            return;
+        }
+        System.out.println("\nCurrent Inventory:");
+        videos.forEach(System.out::println);
+    }
+}
+
+public class VideoStoreLauncher {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        VideoStore store = new VideoStore();
+        store.addVideo("The Matrix");
+        store.addVideo("Inception");
+        store.addVideo("Interstellar");
+
+        while (true) {
+            System.out.print("\n1. Add Video  2. Check Out  3. Return  4. Rate  5. List  6. Exit\nChoose: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            if (choice == 6) break;
+            System.out.print("Enter video title: ");
+            String title = scanner.nextLine();
+            Video video = store.findVideo(title);
+
+            switch (choice) {
+                case 1 -> store.addVideo(title);
+                case 2 -> { if (video != null) video.checkOut(); else System.out.println("Video not found."); }
+                case 3 -> { if (video != null) video.returnVideo(); else System.out.println("Video not found."); }
+                case 4 -> {
+                    if (video != null) { 
+                        System.out.print("Enter rating (1-5): ");
+                        video.receiveRating(scanner.nextInt()); 
+                    } else System.out.println("Video not found.");
+                }
+                case 5 -> store.listInventory();
+                default -> System.out.println("Invalid choice. Try again.");
+            }
+        }
+        scanner.close();
+        System.out.println("Exiting Video Store. Goodbye!");
+    }
+}
